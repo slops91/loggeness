@@ -1,0 +1,9 @@
+Hello Jay,
+
+Thank you for your feedback. In response to your questions and suggestions:
+
+The user does not need to click on the drag-and-drop button. They can directly drag files over the provided icon. Regarding your preference for making the drag-and-drop area a container, I will implement the necessary changes.
+
+The recently viewed button will open a new window displaying timestamped entries for the recent log files that have been analyzed.
+
+Regarding the issue timestamp option, I believe incorporating it into the test case box would be more effective because it provides a clear and immediate reference point for each test case, enhancing traceability and organization.
