@@ -1,0 +1,52 @@
+import re
+
+patterns = [
+    "06-07 13:11:20.109 1000 30688 30688 I SecBluetoothBroadcastSource: startBroadcast By user action",
+    "06-07 13:11:20.115 1000 30688 30688 D BluetoothLeBroadcast: startBroadcasting",
+    "06-07 13:11:20.366 1002 3965 4183 I bt stack: [INFO:broadcaster.cc (652)] CreateAudioBroadcast CreateAudioBroadcast",
+    "06-07 13:11:20.387 1002 3965 5071 D LeAudioService: startBroadcast",
+    "06-07 13:11:20.393 1002 3965 4183 I bt_stack: [INFO:state_machine.cc(423)] CreateBig broadcast_id=1328137",
+    "06-07 13:11:20.490 1002 3965 4183 I bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleciEvent: BIG create BIG complete, big_id=1",
+    "06-07 13:11:20.491 1002 3965 4183 I bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=16",
+    "06-07 13:11:20.497 1002 3965 4183 I bluetooth: packages /modules/Bluetooth/system/bta/le_ audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=17",
+    "06-07 13:11:20.499 1002 3965 4183 I bt_stack: [INFO:broadcaster.cc (1118)] OnStateMachineEvent broadcast id1328137 state=STREAMING"
+]
+
+# Regular expression to match timestamped lines with various log levels
+timestamped_line_regex = re.compile(r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} .*")
+err_count=0
+# Function to search for patterns in the file
+def search_patterns(filename, patterns):
+    try:
+        line_no = 0
+        err_count = 0
+        flag=0
+        log_lines=[]
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
+            for line in file:
+                line_no += 1
+                if not timestamped_line_regex.match(line):
+                    continue  # Skip lines that do not match timestamped line format
+                line=line.strip()
+                line=line.replace("'","")
+                parts=line.split()
+                if(len(parts)<6):
+                    continue
+                if parts[5]=='E':
+                    err_count+=1
+                    if flag==1:
+                        log_lines.append(line)
+                if line in patterns:
+                    log_lines.append(line)
+                    if line==patterns[0]:
+                        flag=1
+                    if line==patterns[8]:
+                        flag=0
+    except FileNotFoundError:
+        print(f"The file {filename} does not exist.")
+    except IOError:
+        print(f"An error occurred while reading the file {filename}.")
+    return log_lines,err_count
+# Example usage
+log_lines,err_count=search_patterns('sample.txt', patterns)
+print(err_count)
