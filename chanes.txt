@@ -1,0 +1,85 @@
+self.file_name = "sample.txt"
+self.home_widgets = [
+            (self.entry, {"row": 4, "column": 1, "columnspan": 3, "padx": (20, 20), "pady": (20, 20), "sticky": "ew"}),
+            (self.main_button_1, {"row": 4, "column": 4, "padx": (20, 20), "pady": (20, 20), "sticky": "ew"}),
+            (self.dragdrop_button, {"row": 1, "column": 1, "padx": (100, 40), "pady": (75, 0), "sticky": "ns"}),
+            (self.choose_button, {"row": 3, "column": 1, "padx": (100, 40), "pady": (20, 0), "sticky": "ns"}),
+            (self.choose_label, {"row": 2, "column": 1, "padx": (90, 40), "pady": (20, 0), "sticky": "ns"}),
+            (self.animated_label, {"row": 0, "column": 1, "columnspan": 3, "padx": 20, "pady": (20, 0), "sticky": "ew"})]
+self.dashboard_widgets = []
+    def show_home(self):
+        # Hide dashboard widgets
+        for widget, grid_info in self.dashboard_widgets:
+            widget.grid_forget()
+
+        # Show home widgets
+        for widget, grid_info in self.home_widgets:
+            widget.grid(**grid_info)
+
+    def show_dashboard(self):
+        # Hide home widgets
+        for widget, grid_info in self.home_widgets:
+            widget.grid_forget()
+
+        # Create dashboard widgets if not already created
+        if not self.dashboard_widgets:
+            # Top bar with filter in the top right corner
+            top_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+            self.dashboard_widgets.append((top_frame, {"row": 0, "column": 0, "columnspan": 2, "sticky": "ew", "pady": (10, 10), "padx": (10, 10)}))
+
+            search_entry = customtkinter.CTkEntry(top_frame, placeholder_text="Search...🔍", fg_color="transparent", width=800)
+            search_entry.pack(side="left", padx=10, pady=10, fill="x", expand=True)
+
+            # Error count display
+            error_count_frame = customtkinter.CTkFrame(top_frame, fg_color="transparent")
+            error_count_frame.pack(side="right", padx=10, pady=10)
+
+            error_summary_label = customtkinter.CTkLabel(error_count_frame, text="Errors:", font=("Helvetica", 16), fg_color="transparent")
+            error_summary_label.pack(anchor="center")
+
+            self.error_count_label = customtkinter.CTkLabel(error_count_frame, text="0", font=("Helvetica", 48, "bold"), fg_color="transparent")
+            self.error_count_label.pack(anchor="center")
+
+            # Filters section on the left
+            filters_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+            self.dashboard_widgets.append((filters_frame, {"row": 1, "column": 0, "sticky": "nsw", "padx": (10, 10), "pady": (10, 10)}))
+
+            filters_label = customtkinter.CTkLabel(filters_frame, text="FILTERS", fg_color="transparent")
+            filters_label.pack(anchor="nw", padx=10, pady=5)
+
+            self.filter_buttons = []
+            filters = ["Log Type", "Log Level", "Tags"]
+            for filter_item in filters:
+                button = customtkinter.CTkButton(filters_frame, text=filter_item, command=lambda item=filter_item: self.filter_logs(item))
+                button.pack(anchor="nw", padx=10, pady=5)
+                self.filter_buttons.append(button)
+
+            # Logs display area with scrollbar
+            logs_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+            self.dashboard_widgets.append((logs_frame, {"row": 1, "column": 1, "sticky": "nsew", "padx": (10, 10), "pady": (10, 10)}))
+            logs_frame.grid_rowconfigure(0, weight=1)
+            logs_frame.grid_columnconfigure(0, weight=1)
+
+            self.canvas = tkinter.Canvas(logs_frame, bg=self.cget("background"))
+            self.canvas.grid(row=0, column=0, sticky="nsew")
+
+            self.scrollbar = customtkinter.CTkScrollbar(logs_frame, command=self.canvas.yview)
+            self.scrollbar.grid(row=0, column=1, sticky="ns")
+
+            self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+            self.log_labels_frame = customtkinter.CTkFrame(self.canvas, fg_color="transparent")
+            self.canvas.create_window((0, 0), window=self.log_labels_frame, anchor="nw")
+
+            self.log_labels_frame.bind("<Configure>", self.on_frame_configure)
+
+            self.logs = []
+            self.max_logs = 50
+            self.populate_logs()
+
+        # Show dashboard widgets
+        for widget, grid_info in self.dashboard_widgets:
+            widget.grid(**grid_info)
+
+    def on_frame_configure(self, event=None):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
