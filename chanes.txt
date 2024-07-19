@@ -85,3 +85,11 @@ self.dashboard_widgets = []
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))'
 self.entry = customtkinter.CTkEntry(self.entry_frame, placeholder_text="Enter Test Case and Time of Issue")
         self.entry.pack(side="left", fill="x", expand=True)
+self.entry = customtkinter.CTkOptionMenu(self,values=["1. BT Settings 2. Broadcast Sound from this Phone 3. Start Broadcast","1. BT settings 2. Broadcast sound from this phone 3. Change Broadcast Name 4. Change Password 5. Start Broadcast","1. BT settings 2. Broadcast sound from this phone 3. Start Broadcast 4. Stop Broadcast",
+"1. BT settings 2. Broadcast sound from this phone 3. Start Broadcast 4. Play music 5. Stop broadcast","1. Buds connected 2. BT settings 3. Broadcast sound from this phone 4. Start Broadcast 5. Play music 6. Stop broadcast",
+"1. BT settings 2. Broadcast sound from this phone 3. Start Broadcast 4. Play music 5. Turn off BT"])
+        self.entry.set("Enter Test Case and Time of Issue(eg: 'Test1 06-07 13:11:20.491')")
+        self.entry.grid(row=4, column=1, columnspan=3, padx=(20, 20), pady=(20, 20), sticky="ew")
+        # self.entry.pack(side="left", fill="x", expand=True)
+        # self.timeofissue= customtkinter.CTkEntry(self, placeholder_text="Enter Time of Issue(Optional)")
+        # self.timeofissue.grid(row=4,column=3,padx=(20,20),pady=(20,20),sticky="ew")
