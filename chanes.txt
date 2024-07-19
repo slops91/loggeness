@@ -82,4 +82,6 @@ self.dashboard_widgets = []
             widget.grid(**grid_info)
 
     def on_frame_configure(self, event=None):
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))'
+self.entry = customtkinter.CTkEntry(self.entry_frame, placeholder_text="Enter Test Case and Time of Issue")
+        self.entry.pack(side="left", fill="x", expand=True)
