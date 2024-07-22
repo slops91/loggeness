@@ -18,6 +18,11 @@ import re
 # Define the regex pattern for the initial log entry
 initial_log_entry_regex = re.compile(r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s+(?:\d+|[a-zA-Z]+)\s+\d+\s+\d+\s+[IDVW]")
 
+import re
+
+# Define the regex pattern for the initial log entry
+initial_log_entry_regex = re.compile(r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s+(?:\d+|[a-zA-Z]+)\s+\d+\s+\d+\s+[IDVW]")
+
 # Define the sequence of lines to search for
 sequence_of_lines = [
     r"SecBluetoothBroadcastSource: startBroadcast By user action",
@@ -34,37 +39,30 @@ sequence_of_lines = [
 # Compile the sequence of regex patterns
 compiled_sequence = [re.compile(pattern) for pattern in sequence_of_lines]
 
-def search_sequence(filename):
+def search_independent_patterns(filename):
     try:
         with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
             lines = file.readlines()
-            line_index = 0
+            found_initial_entry = False
 
-            # Search for the initial log entry
-            while line_index < len(lines):
-                if initial_log_entry_regex.match(lines[line_index]):
-                    print(f"Initial log entry matched: {lines[line_index].strip()}")
-                    line_index += 1
-                    break
-                line_index += 1
+            # Search for the initial log entry and sequence of lines independently
+            for line in lines:
+                if initial_log_entry_regex.match(line):
+                    print(f"Initial log entry matched: {line.strip()}")
+                    found_initial_entry = True
 
-            # Search for the sequence of lines
-            for regex in compiled_sequence:
-                while line_index < len(lines):
-                    if regex.search(lines[line_index]):
-                        print(f"Matched: {lines[line_index].strip()}")
-                        line_index += 1
+                for regex in compiled_sequence:
+                    if regex.search(line):
+                        print(f"Matched: {line.strip()}")
                         break
-                    line_index += 1
-                else:
-                    print("Sequence not found.")
-                    return
 
-            print("Complete sequence matched.")
+            if not found_initial_entry:
+                print("No initial log entry found.")
+
     except FileNotFoundError:
         print(f"The file {filename} does not exist.")
     except IOError:
         print(f"An error occurred while reading the file {filename}.")
 
 # Example usage
-search_sequence('sample.txt')
+search_independent_patterns('sample.txt')
