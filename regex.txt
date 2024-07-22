@@ -13,3 +13,58 @@
 06-07 13:12:27.427 10345 12950 25502 D 
 06-07 13:11:20.490  1002  3965  4183 I
 log_entry_regex = r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s+(?:\d+|[a-zA-Z]+)\s+\d+\s+\d+\s+[IDVW]"
+import re
+
+# Define the regex pattern for the initial log entry
+initial_log_entry_regex = re.compile(r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s+(?:\d+|[a-zA-Z]+)\s+\d+\s+\d+\s+[IDVW]")
+
+# Define the sequence of lines to search for
+sequence_of_lines = [
+    r"SecBluetoothBroadcastSource: startBroadcast By user action",
+    r"BluetoothLeBroadcast: startBroadcasting",
+    r"bt stack: \[INFO:broadcaster.cc \(652\)\] CreateAudioBroadcast CreateAudioBroadcast",
+    r"LeAudioService: startBroadcast",
+    r"bt_stack: \[INFO:state_machine.cc\(423\)\] CreateBig broadcast_id=\d+",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleciEvent: BIG create BIG complete, big_id=\d+",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
+    r"bt_stack: \[INFO:broadcaster.cc \(1118\)\] OnStateMachineEvent broadcast id\d+ state=STREAMING"
+]
+
+# Compile the sequence of regex patterns
+compiled_sequence = [re.compile(pattern) for pattern in sequence_of_lines]
+
+def search_sequence(filename):
+    try:
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
+            lines = file.readlines()
+            line_index = 0
+
+            # Search for the initial log entry
+            while line_index < len(lines):
+                if initial_log_entry_regex.match(lines[line_index]):
+                    print(f"Initial log entry matched: {lines[line_index].strip()}")
+                    line_index += 1
+                    break
+                line_index += 1
+
+            # Search for the sequence of lines
+            for regex in compiled_sequence:
+                while line_index < len(lines):
+                    if regex.search(lines[line_index]):
+                        print(f"Matched: {lines[line_index].strip()}")
+                        line_index += 1
+                        break
+                    line_index += 1
+                else:
+                    print("Sequence not found.")
+                    return
+
+            print("Complete sequence matched.")
+    except FileNotFoundError:
+        print(f"The file {filename} does not exist.")
+    except IOError:
+        print(f"An error occurred while reading the file {filename}.")
+
+# Example usage
+search_sequence('sample.txt')
