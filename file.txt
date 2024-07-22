@@ -1,0 +1,2 @@
+06-07 13:11:20.499  1002  3965  4183 I bt_stack: [INFO:broadcaster.cc(1118)] OnStateMachineEvent broadcast_id1328137 state=STREAMING
+06-07 13:11:20.366  1002  3965  4183 I bt_stack: [INFO:broadcaster.cc(652)] CreateAudioBroadcast CreateAudioBroadcast
