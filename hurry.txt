@@ -1,0 +1,23 @@
+def show_timestamp_entry(self):
+    self.timestamp_frame = customtkinter.CTkFrame(self)
+    self.timestamp_frame.grid(row=5, column=1, columnspan=3, padx=20, pady=20, sticky="ew")
+    
+    self.timestamp_entry = customtkinter.CTkEntry(self.timestamp_frame, placeholder_text="Enter Timestamp (optional)")
+    self.timestamp_entry.pack(pady=10, padx=20, fill="x")
+    
+    submit_button = customtkinter.CTkButton(self.timestamp_frame, text="Submit", command=self.on_timestamp_submit)
+    submit_button.pack(pady=10)
+
+def on_timestamp_submit(self):
+    timestamp = self.timestamp_entry.get()
+    self.timestamp_frame.destroy()  # Remove the timestamp entry and submit button after submitting
+    test_case = self.entry.get()
+    if test_case:
+        if self.file_path:
+            self.start_loading_bar()
+            self.extract_and_read_7z(self.file_path, self.dest_directory)
+        else:
+            tkinter.messagebox.showinfo("Test Case", f"Test Case: {test_case}\nTimestamp: {timestamp}")
+
+def on_submit(self):
+    self.show_timestamp_entry()
