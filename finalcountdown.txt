@@ -53,34 +53,26 @@ def search_and_sort_patterns(filename):
     except IOError:
         print(f"An error occurred while reading the file {filename}.")
     
-    sorted_results = sorted(results.items())
+ latest_occurrence = [None] * len(sequence_of_lines)
+    last_valid_timestamp = None
 
-    # Track the latest occurrence of each pattern
-    latest_occurrence = {idx: None for idx in range(len(sequence_of_lines))}
-    display = []
-
-    for idx, occurrences in sorted_results:
-        if occurrences:
+    for idx in range(len(sequence_of_lines)):
+        if results[idx]:
             # Sort occurrences by timestamp
-            occurrences.sort(key=lambda x: x[0])
-            # Take the latest occurrence
-            latest_occurrence[idx] = occurrences[-1][1]
-    
-    # Ensure order and fill in missing entries
+            results[idx].sort(key=lambda x: x[0])
+            # Find the latest valid occurrence that is greater than the last valid timestamp
+            for timestamp, line in results[idx]:
+                if last_valid_timestamp is None or timestamp > last_valid_timestamp:
+                    latest_occurrence[idx] = (timestamp, line)
+                    last_valid_timestamp = timestamp
+                    break
+
+    # Fill in missing entries and format the final results
+    display = []
     for idx in range(len(sequence_of_lines)):
         if latest_occurrence[idx] is None:
             # Line is missing, use placeholder
             placeholder = f"{sequence_of_lines[idx]} MISSING"
             display.append(placeholder)
         else:
-            display.append(latest_occurrence[idx])
-
-    # Sort display to maintain sequence order
-    sorted_display = sorted(display, key=lambda x: sequence_of_lines.index(x.split()[0]))
-
-    return sorted_display
-
-# Example usage
-results = search_and_sort_patterns('dumpState_F741BXXU1AXET_202406071315.log')
-for result in results:
-    print(result)
+            display.append(latest_occurrence[idx][1])
