@@ -1,137 +1,7 @@
 import re
-import os
-from datetime import datetime
 
 # Define the sequence of lines to search for
 initial_log_entry_regex = re.compile(r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s+(?:\d+|[a-zA-Z]+)\s+\d+\s+\d+\s+[IDVW]")
-
-# Define the sequence of lines to search for test_case_1
-# sequence_of_lines = [
-#     r"SecBluetoothBroadcastSource: startBroadcast By user action",
-#     r"BluetoothLeBroadcast: startBroadcasting",
-#     r"\[INFO:broadcaster\.cc\(652\)\]",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=CONFIGURED",
-#     r"LeAudioService: startBroadcast",
-#     r"bt_stack: \[INFO:state_machine\.cc\(423\)\] CreateBig broadcast_id=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING"
-
-# ]
-# sequence of lines for test_case_2
-# sequence_of_lines = [
-    # r"\[INFO:broadcaster\.cc\(652\)\]",
-    # r"OnBroadcastCreated",
-    # r"LeAudioService: startBroadcast",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-    # r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING"
-
-
-# ]
-# sequence of lines for test_case_3
-# sequence_of_lines = [
-#     r"\[INFO:broadcaster\.cc\(652\)\]"
-#     r"OnBroadcastCreated",
-#     r"LeAudioService: startBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
-#     r"LeAudioService: stopBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:582 TriggerIsoDatapathTeardown: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:582 TriggerIsoDatapathTeardown: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:642 HandleHciEvent: BIG terminate BIG cmpl, reason=\d+ big_id=\d",
-#     r"bt_stack: \[INFO:state_machine\.cc\(452\)\] DisableAnnouncement broadcast_id=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STOPPED",
-#     r"LeAudioBroadcasterNativeInterface: onBroadcastDestroyed: broadcastId=\d+"
-# ]
-# sequence of lines for test_case_4
-# sequence_of_lines = [
-#     r"\[INFO:broadcaster\.cc\(652\)\]"
-#     r"OnBroadcastCreated",
-#     r"LeAudioService: startBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1436\)\] OnAudioResume",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/audio_hal_client/audio_broadcast_source_hal_client.cc:364 ConfirmStreamingRequest:",
-#     r"BTAudioProviderStub: sehStreamStarted - SessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, status=SUCCESS",
-#     r"BTAudioSessionAidl: ReportControlStatus - status=SUCCESS for SehSessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, bluetooth_audio=0x0900 started",
-#     r"LeAudioService: stopBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:582 TriggerIsoDatapathTeardown: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:582 TriggerIsoDatapathTeardown: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:642 HandleHciEvent: BIG terminate BIG cmpl, reason=\d+ big_id=\d",
-#     r"bt_stack: \[INFO:state_machine\.cc\(452\)\] DisableAnnouncement broadcast_id=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STOPPED",
-#     r"LeAudioBroadcasterNativeInterface: onBroadcastDestroyed: broadcastId=\d+"]
-
-# sequence of lines for test_case_5
-#sequence_of_lines = [    
-    # r"\[INFO:broadcaster\.cc\(652\)\]"
-    # r"OnBroadcastCreated",
-    # r"LeAudioService: startBroadcast",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-    # r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
-    # r"LeAudioService: addLocalSource:",
-    # r"BassClientService: addLocalSource : handover group size =",
-    # r"AddSource : Src 07:BB:DC:64:04:EF Bid 1328137 PA_Sync 1 SubGroup 1 \[ \[0\] BIS_Sync 0x2 \(Sel\) \]",
-    # r"AddSource : Src 07:BB:DC:64:04:EF Bid 1328137 PA_Sync 1 SubGroup 1 \[ \[0\] BIS_Sync 0x1 \(Sel\) \]",
-    # r"processPASyncState : Initiate local broadcast PAST for: 07:BB:DC:64:04:EF, advSID/Handle: 1, serviceData: 258",
-    # r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[2\]",
-    # r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[1\]"
-    # r"bt_stack: \[INFO:broadcaster\.cc\(1436\)\] OnAudioResume",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/audio_hal_client/audio_broadcast_source_hal_client.cc:364 ConfirmStreamingRequest:",
-    # r"BTAudioProviderStub: sehStreamStarted - SessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, status=SUCCESS",
-    # r"BTAudioSessionAidl: ReportControlStatus - status=SUCCESS for SehSessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, bluetooth_audio=0x0900 started",
-    # r"LeAudioService: stopBroadcast",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:582 TriggerIsoDatapathTeardown: conn_hdl=\d+",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:582 TriggerIsoDatapathTeardown: conn_hdl=\d+",
-    # r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:642 HandleHciEvent: BIG terminate BIG cmpl, reason=\d+ big_id=\d",
-    # r"bt_stack: \[INFO:state_machine\.cc\(452\)\] DisableAnnouncement broadcast_id=\d+",
-    # r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STOPPED",
-    # r"LeAudioBroadcasterNativeInterface: onBroadcastDestroyed: broadcastId=\d+"]
-
-# sequence of lines for test_case_6
-# sequence_of_lines = [
-#     r"\[INFO:broadcaster\.cc\(652\)\]"
-#     r"OnBroadcastCreated",
-#     r"LeAudioService: startBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1436\)\] OnAudioResume",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/audio_hal_client/audio_broadcast_source_hal_client.cc:364 ConfirmStreamingRequest:",
-#     r"BTAudioProviderStub: sehStreamStarted - SessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, status=SUCCESS",
-#     r"BTAudioSessionAidl: ReportControlStatus - status=SUCCESS for SehSessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, bluetooth_audio=0x0900 started",
-#     r"BluetoothMapService: STATE_TURNING_OFF",
-#     r"BtOppService: Bluetooth state changed: STATE_TURNING_OFF",
-#     r"SecBluetoothBroadcastSource: BT is disabled"]
-
-#sequence of lines for test_case_7
-# sequence_of_lines = [
-#     r"\[INFO:broadcaster\.cc\(652\)\]",
-#     r"OnBroadcastCreated",
-#     r"LeAudioService: startBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1436\)\] OnAudioResume",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/audio_hal_client/audio_broadcast_source_hal_client.cc:364 ConfirmStreamingRequest:",
-#     r"BTAudioProviderStub: sehStreamStarted - SessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, status=SUCCESS",
-#     r"BTAudioSessionAidl: ReportControlStatus - status=SUCCESS for SehSessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, bluetooth_audio=0x0900 started",
-#     r"notifyReceiveStateChanged: source: BC:93:07:37:A2:49",
-#     r"notifyReceiveStateChanged: source: BC:93:07:37:A2:5F",
-#     r"BassClientService: stopBroadcast: Headset not synced to local broadcast",
-#     r"LeAudioService: stopBroadcast"]
-#sequence of lines for test_case_8
 sequence_of_lines = [
     r"\[INFO:broadcaster\.cc\(652\)\]",
     r"OnBroadcastCreated",
@@ -148,73 +18,51 @@ sequence_of_lines = [
     r"LeAudioService: addLocalSource:",
     r"BassClientService: addSource : sink",
     r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[2\]",
-    r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[1\]"]
-#sequence of lines for test_case_9
-# sequence_of_lines = [
-#     r"\[INFO:broadcaster\.cc\(652\)\]",
-#     r"OnBroadcastCreated",
-#     r"LeAudioService: startBroadcast",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
-#     r"bt_stack: \[INFO:broadcaster\.cc\(1436\)\] OnAudioResume",
-#     r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/audio_hal_client/audio_broadcast_source_hal_client.cc:364 ConfirmStreamingRequest:",
-#     r"BTAudioProviderStub: sehStreamStarted - SessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, status=SUCCESS",
-#     r"BTAudioSessionAidl: ReportControlStatus - status=SUCCESS for SehSessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, bluetooth_audio=0x0900 started",
-#     r"LeAudioService: changeLocalBroadcastDevice : addSource with",
-#     r"LeAudioService: addLocalSource:",
-#     r"BassClientService: addSource : sink",
-#     r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[2\]",
-#     r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[1\]",
-#     r"notifyReceiveStateChanged: source: BC:93:07:37:A2:49",
-#     r"notifyReceiveStateChanged: source: BC:93:07:37:A2:5F",
-#     r"BassClientService: stopBroadcast: Headset not synced to local broadcast",
-#     r"LeAudioService: stopBroadcast"]
-
-
-
-
-
-# Compile the sequence of regex patterns
+    r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[1\]"
+]
 compiled_sequence = [re.compile(pattern) for pattern in sequence_of_lines]
 
-def search_independent_patterns(filename):
-    results=[]
+def extract_timestamp(line):
+    match = re.match(r"(\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})", line)
+    if match:
+        return match.group(1)
+    return ""
+
+def search_and_sort_patterns(filename):
+    results = {}
+    
     try:
         with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
             lines = file.readlines()
-            found_initial_entry = False
 
-            # Search for the initial log entry and sequence of lines independently
             for line in lines:
                 if initial_log_entry_regex.match(line):
-                    for regex in compiled_sequence:
-                        if regex.findall(line):
-                            flag=0
-                            line=line.strip()
-                            line=line.replace("'","")
-                            parts=line.split()
-                            linec=" ".join(parts[6:])
-                            for i in range(0,len(results)):
-                                pards=results[i].split()
-                                lined=" ".join(pards[6:])
-                                if linec==lined:
-                                    results[i]=line
-                                    flag=1
-                                    print("check")
-                                    break
-                            if flag==0:
-                                results.append(line)
-                                print("check")
+                    timestamp = extract_timestamp(line)
+                    for idx, regex in enumerate(compiled_sequence):
+                        if regex.search(line):
+                            if timestamp not in results:
+                                results[timestamp] = [None] * len(compiled_sequence)
+                            results[timestamp][idx] = line.strip()
                             break
 
     except FileNotFoundError:
         print(f"The file {filename} does not exist.")
     except IOError:
         print(f"An error occurred while reading the file {filename}.")
-    for result in results:
-        print(result)
+    
+    sorted_results = sorted(results.items())
+
+    # Fill in missing entries and format the final results
+    formatted_results = []
+    for timestamp, lines in sorted_results:
+        for idx, line in enumerate(lines):
+            if line is None:
+                line = f"{timestamp} MISSING: {sequence_of_lines[idx]}"
+            formatted_results.append(line)
+
+    return formatted_results
 
 # Example usage
-search_independent_patterns('dumpState_F741BXXU1AXET_202406071315.log')
+results = search_and_sort_patterns('dumpState_F741BXXU1AXET_202406071315.log')
+for result in results:
+    print(result)
