@@ -176,11 +176,14 @@ sequence_of_lines = [
 
 
 
-for idx in reversed(range(len(sequence_of_lines))):
+ latest_occurrence = [None] * len(sequence_of_lines)
+    next_valid_timestamp = None
+
+    for idx in reversed(range(len(sequence_of_lines))):
         if results[idx]:
             # Sort occurrences by timestamp
             results[idx].sort(key=lambda x: x[0])
-            # Find the latest valid occurrence that is less than the next valid timestamp
+            # Find the first valid occurrence that is less than the next valid timestamp
             for timestamp, line in reversed(results[idx]):
                 if next_valid_timestamp is None or timestamp < next_valid_timestamp:
                     latest_occurrence[idx] = (timestamp, line)
@@ -189,13 +192,21 @@ for idx in reversed(range(len(sequence_of_lines))):
 
     # Fill in missing entries and format the final results
     display = []
+    previous_timestamp = None
     for idx in range(len(sequence_of_lines)):
         if latest_occurrence[idx] is None:
             # Line is missing, use placeholder
             placeholder = f"{sequence_of_lines[idx]} MISSING"
             display.append(placeholder)
         else:
-            display.append(latest_occurrence[idx][1])
+            timestamp, line = latest_occurrence[idx]
+            if previous_timestamp is None or timestamp > previous_timestamp:
+                display.append(line)
+                previous_timestamp = timestamp
+            else:
+                # If the timestamp is not in increasing order, use a placeholder
+                placeholder = f"{sequence_of_lines[idx]} MISSING"
+                display.append(placeholder)
 
     return display
 
