@@ -1,0 +1,86 @@
+import re
+
+# Define the sequence of lines to search for
+initial_log_entry_regex = re.compile(r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s+(?:\d+|[a-zA-Z]+)\s+\d+\s+\d+\s+[IDVW]")
+sequence_of_lines = [
+    r"\[INFO:broadcaster\.cc\(652\)\]",
+    r"OnBroadcastCreated",
+    r"LeAudioService: startBroadcast",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:603 HandleHciEvent: BIG create BIG complete, big_id=\d",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.c:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/broadcaster/state_machine.cc:533 TriggerIsoDatapathSetup: conn_hdl=\d+",
+    r"bt_stack: \[INFO:broadcaster\.cc\(1118\)\] OnStateMachineEvent broadcast_id\d+ state=STREAMING",
+    r"bt_stack: \[INFO:broadcaster\.cc\(1436\)\] OnAudioResume",
+    r"bluetooth: packages/modules/Bluetooth/system/bta/le_audio/audio_hal_client/audio_broadcast_source_hal_client.cc:364 ConfirmStreamingRequest:",
+    r"BTAudioProviderStub: sehStreamStarted - SessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, status=SUCCESS",
+    r"BTAudioSessionAidl: ReportControlStatus - status=SUCCESS for SehSessionType=LE_AUDIO_BROADCAST_HARDWARE_OFFLOAD_ENCODING_DATAPATH, bluetooth_audio=0x0900 started",
+    r"LeAudioService: changeLocalBroadcastDevice : addSource with",
+    r"LeAudioService: addLocalSource:",
+    r"BassClientService: addSource : sink",
+    r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[2\]",
+    r"processPASyncState : state - 2, source 07:BB:DC:64:04:EF BIS Sync state - \[1\]"
+]
+compiled_sequence = [re.compile(pattern) for pattern in sequence_of_lines]
+
+def extract_timestamp(line):
+    match = re.match(r"(\d{2}-\d{2} \d{2}:\d{2}:\d{2})", line)
+    if match:
+        return match.group(1)
+    return ""
+
+def search_and_sort_patterns(filename):
+    results = {}
+    
+    try:
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
+            lines = file.readlines()
+            
+            for idx in range(len(compiled_sequence)):
+                results[idx] = []
+
+            for line in lines:
+                if initial_log_entry_regex.match(line):
+                    timestamp = extract_timestamp(line)
+                    for idx, regex in enumerate(compiled_sequence):
+                        if regex.search(line):
+                            line = line.strip()
+                            line = line.replace("'", "")
+                            results[idx].append((timestamp, line))
+                            break
+
+    except FileNotFoundError:
+        print(f"The file {filename} does not exist.")
+    except IOError:
+        print(f"An error occurred while reading the file {filename}.")
+    
+    sorted_results = sorted(results.items())
+
+    # Track the latest occurrence of each pattern
+    latest_occurrence = {idx: None for idx in range(len(sequence_of_lines))}
+    display = []
+
+    for idx, occurrences in sorted_results:
+        if occurrences:
+            # Sort occurrences by timestamp
+            occurrences.sort(key=lambda x: x[0])
+            # Take the latest occurrence
+            latest_occurrence[idx] = occurrences[-1][1]
+    
+    # Ensure order and fill in missing entries
+    for idx in range(len(sequence_of_lines)):
+        if latest_occurrence[idx] is None:
+            # Line is missing, use placeholder
+            placeholder = f"{sequence_of_lines[idx]} MISSING"
+            display.append(placeholder)
+        else:
+            display.append(latest_occurrence[idx])
+
+    # Sort display to maintain sequence order
+    sorted_display = sorted(display, key=lambda x: sequence_of_lines.index(x.split()[0]))
+
+    return sorted_display
+
+# Example usage
+results = search_and_sort_patterns('dumpState_F741BXXU1AXET_202406071315.log')
+for result in results:
+    print(result)
