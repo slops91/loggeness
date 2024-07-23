@@ -223,3 +223,54 @@ def search_and_sort_patterns(filename):
 
 # Example usage
 search_and_sort_patterns('dumpState_F741BXXU1AXET_202406071315.log')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  latest_occurrence = [None] * len(sequence_of_lines)
+    last_valid_timestamp = None
+
+    for idx in reversed(range(len(sequence_of_lines))):
+        if results[idx]:
+            # Sort occurrences by timestamp
+            results[idx].sort(key=lambda x: x[0])
+            # Find the latest valid occurrence that is less than the last valid timestamp
+            for timestamp, line in reversed(results[idx]):
+                if last_valid_timestamp is None or timestamp < last_valid_timestamp:
+                    latest_occurrence[idx] = line
+                    last_valid_timestamp = timestamp
+                    break
+
+    # Fill in missing entries and format the final results
+    display = []
+    for idx in range(len(sequence_of_lines)):
+        if latest_occurrence[idx] is None:
+            # Line is missing, use placeholder
+            placeholder = f"{sequence_of_lines[idx]} MISSING"
+            display.append(placeholder)
+        else:
+            display.append(latest_occurrence[idx])
+
+    return display
