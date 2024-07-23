@@ -176,55 +176,28 @@ sequence_of_lines = [
 
 
 
-compiled_sequence = [re.compile(pattern) for pattern in sequence_of_lines]
+for idx in reversed(range(len(sequence_of_lines))):
+        if results[idx]:
+            # Sort occurrences by timestamp
+            results[idx].sort(key=lambda x: x[0])
+            # Find the latest valid occurrence that is less than the next valid timestamp
+            for timestamp, line in reversed(results[idx]):
+                if next_valid_timestamp is None or timestamp < next_valid_timestamp:
+                    latest_occurrence[idx] = (timestamp, line)
+                    next_valid_timestamp = timestamp
+                    break
 
-def extract_timestamp(line):
-    match = re.match(r"(\d{2}-\d{2} \d{2}:\d{2})", line)
-    if match:
-        return match.group(1)
-    return ""
-
-def search_and_sort_patterns(filename):
-    results = {}
-    
-    try:
-        with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
-            lines = file.readlines()
-            results={}
-            for idx in range(len(compiled_sequence)):
-                results[idx]=[None]*len(compiled_sequence)
-            for line in lines:
-                if initial_log_entry_regex.match(line):
-                    timestamp = extract_timestamp(line)
-                    for idx, regex in enumerate(compiled_sequence):
-                        if regex.search(line):
-                            line=line.strip()
-                            line=line.replace("'","")
-                            results[idx].append(line)
-                            break
-
-    except FileNotFoundError:
-        print(f"The file {filename} does not exist.")
-    except IOError:
-        print(f"An error occurred while reading the file {filename}.")
-    
-    sorted_results = sorted(results.items())
-    display=[]
     # Fill in missing entries and format the final results
-    for idx, lines in sorted_results:
-        if all(value is None for value in lines):
-            normal_string=sequence_of_lines[idx].encode('utf-8').decode('unicode_escape')
-            display.append(normal_string)
+    display = []
+    for idx in range(len(sequence_of_lines)):
+        if latest_occurrence[idx] is None:
+            # Line is missing, use placeholder
+            placeholder = f"{sequence_of_lines[idx]} MISSING"
+            display.append(placeholder)
         else:
-            if self.timestamp
-        
+            display.append(latest_occurrence[idx][1])
 
-    print(sorted_results)
-
-# Example usage
-search_and_sort_patterns('dumpState_F741BXXU1AXET_202406071315.log')
-
-
+    return display
 
 
 
