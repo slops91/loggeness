@@ -1,0 +1,21 @@
+About SRIB
+Internship Tasks
+Breakdown
+Tools & Libraries Utilized
+Demo
+Internship Impact
+Conclusion
+Tool should be able to browse the files from explorer
+
+2) Provide support for drag and drop
+
+3) If selected/dropped folder is zipped. Tool must be capable of unzipping and storing the container at user's desired location
+
+4) Tool must automatically fetch the dumpstate and snoop log files from the folder
+
+Test case needs to be entered into the tool's Ul as text.
+
+5) Based on the test case, tool should find the matching and missing logs from the working flow and display it
+
+
+7) The tool should identify the logs at the issue occurrence time mentioned in the test case
